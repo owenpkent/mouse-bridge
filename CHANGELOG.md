@@ -4,6 +4,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-05
+
 ### Added
 
 - Firmware for Raspberry Pi Pico 2 W and Pico W: pairs with a Bluetooth Classic mouse, saves it in flash, reconnects on boot, and forwards movement, buttons and wheel as a USB mouse.
@@ -15,3 +17,6 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 - Untested on hardware. See [TODO.md](TODO.md).
 - The LED pauses for 5 seconds during each pairing scan (arduino-pico 6.3.2's async scan does not link).
+
+[Unreleased]: https://github.com/owenpkent/mouse-bridge/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/owenpkent/mouse-bridge/releases/tag/v0.1.0
