@@ -169,14 +169,9 @@ static bool isPointingDevice(uint32_t cod) {
 static void doPairing() {
   LOG("Pairing: scanning %d s (put the mouse in pairing mode)\n", SCAN_SECONDS);
 
-  // Async scan so the LED keeps blinking while the radio listens.
-  hid.scan(BluetoothHIDMaster::any_cod, SCAN_SECONDS, true);
-  while (!hid.scanAsyncDone()) {
-    ledUpdate();
-    checkForget();
-    delay(10);
-  }
-  auto found = hid.scanAsyncResult();
+  // Blocking scan: the LED holds still for SCAN_SECONDS. (The async scan API is
+  // declared in arduino-pico 6.3.2 but BluetoothHCI never defines it, so it won't link.)
+  auto found = hid.scan(BluetoothHIDMaster::any_cod, SCAN_SECONDS);
 
   int best = -1;
   for (size_t i = 0; i < found.size(); i++) {
