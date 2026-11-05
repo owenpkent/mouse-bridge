@@ -27,3 +27,4 @@ Firmware compiles in CI only (no local toolchain yet). Nothing below has run on 
 
 - [ ] Enclosure (print)
 - [ ] If arduino-pico's HID host proves flaky: fall back to Bluepad32 on the same board (see [docs/project-summary.md](docs/project-summary.md))
+- [ ] If the bridge needs to join an ESP-IDF based system: evaluate the ESP32-S31, starting by confirming that Classic HID host and USB device both work on it in ESP-IDF
