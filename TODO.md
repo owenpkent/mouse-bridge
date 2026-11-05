@@ -1,6 +1,6 @@
 # TODO
 
-Firmware compiles in CI only (no local toolchain yet). Nothing below has run on hardware.
+Firmware compiles in CI only (no local toolchain yet). Nothing below has run on hardware. Community tracking: [issue #1](https://github.com/owenpkent/mouse-bridge/issues/1).
 
 ## Get hardware
 
