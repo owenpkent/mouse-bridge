@@ -1,0 +1,38 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        board: [rpipico2w, rpipicow]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Install arduino-pico core
+        run: |
+          arduino-cli config init
+          arduino-cli config add board_manager.additional_urls https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+          arduino-cli core update-index
+          arduino-cli core install rp2040:rp2040
+      - name: Compile
+        run: |
+          arduino-cli compile \
+            --fqbn "rp2040:rp2040:${{ matrix.board }}:ipbtstack=ipv4btcble,usbstack=picosdk" \
+            --warnings default \
+            --output-dir build/${{ matrix.board }} \
+            firmware/mouse_bridge
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mouse_bridge-${{ matrix.board }}
+          path: build/${{ matrix.board }}/*.uf2
+          retention-days: 7
