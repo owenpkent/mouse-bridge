@@ -8,6 +8,16 @@ A normal Bluetooth adapter is only a radio: the pairing lives in the computer's 
 
 Status: firmware builds in CI but is **not yet tested on hardware**. If you have a Pico W or Pico 2 W and a Bluetooth mouse, a [mouse report](https://github.com/owenpkent/mouse-bridge/issues/new?template=mouse-report.yml) is the most useful contribution right now. See [TODO.md](TODO.md).
 
+## Why this exists
+
+I use a power wheelchair, and the joystick I drive it with is also my mouse: the chair's R-net control system acts as a Bluetooth Classic mouse. It is the one pointing device I can use comfortably, so I can't just grab a spare mouse when I sit down at a different computer.
+
+Moving the joystick-mouse between computers today means re-pairing it every time, through the chair's Bluetooth menu and each computer's settings. A KVM switch doesn't help, because Bluetooth bypasses it. Software sharing (Mouse Without Borders and similar) needs the computers on the same network with an app running on each, which rules out work laptops, test machines and anything that is still booting.
+
+mouse-bridge moves the pairing out of the computer and into a small dongle. Pair the chair once, then move the dongle (or flip a USB switch) to whichever computer I'm using, and the joystick just works there as a wired mouse.
+
+It should help anyone in the same spot: a Bluetooth assistive pointing device, or any Bluetooth Classic mouse, that has to follow its user between machines.
+
 ## Hardware
 
 - Raspberry Pi Pico 2 W (Pico W also works; Pimoroni Pico Plus 2 W for USB-C)
