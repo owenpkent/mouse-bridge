@@ -1,0 +1,34 @@
+name: Bug report
+description: Something in the firmware, build or docs is wrong.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Board, mouse, and host computer OS
+      placeholder: Pico 2 W, Logitech M557, Windows 11
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Firmware version or commit, and arduino-pico core version if you built it yourself
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Serial log (build with DEBUG 1)
+      render: text

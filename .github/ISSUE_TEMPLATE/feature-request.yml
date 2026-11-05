@@ -1,0 +1,17 @@
+name: Feature request
+description: Suggest a change to what the bridge does.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to happen?
+  - type: markdown
+    attributes:
+      value: "Out of scope: moving the cursor across screens (use Mouse Without Borders, Input Leap or Deskflow for that)."

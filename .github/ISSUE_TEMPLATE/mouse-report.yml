@@ -1,0 +1,62 @@
+name: Mouse report
+description: Tell us how a specific mouse works (or doesn't) with the bridge.
+title: "Mouse report: <brand and model>"
+labels: [mouse-report]
+body:
+  - type: markdown
+    attributes:
+      value: Every report, working or not, goes into the compatibility table in the README. Thank you.
+  - type: input
+    id: mouse
+    attributes:
+      label: Mouse brand and model
+      placeholder: e.g. Logitech M557
+    validations:
+      required: true
+  - type: dropdown
+    id: board
+    attributes:
+      label: Board
+      options: [Pico 2 W, Pico W, Pimoroni Pico Plus 2 W, Other]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Firmware version or commit
+      placeholder: e.g. v0.1.0 or a1b2c3d
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Overall
+      options: [Works fully, Works with a config flag, Partly works, Does not work]
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: What works
+      options:
+        - label: Pairs on first boot
+        - label: Movement
+        - label: Left, right and middle buttons
+        - label: Scroll wheel, correct direction
+        - label: Reconnects after unplugging the Pico (without re-pairing the mouse)
+        - label: Works after moving the Pico to another computer
+  - type: input
+    id: hotswap
+    attributes:
+      label: Hot-swap time (seconds)
+      description: From plugging into a computer to a working cursor, if you measured it.
+  - type: input
+    id: flags
+    attributes:
+      label: Config flags changed
+      placeholder: e.g. BUTTON_INDEX_BASE 1
+  - type: textarea
+    id: log
+    attributes:
+      label: Serial log (DEBUG 1), if anything failed
+      render: text
