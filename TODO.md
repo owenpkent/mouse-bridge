@@ -30,7 +30,7 @@ Firmware compiles in CI only (no local toolchain yet). Nothing below has run on 
 
 ## ESP32-S31 port (experimental)
 
-- [ ] Get [firmware/mouse_bridge_esp32s31](firmware/mouse_bridge_esp32s31/README.md) compiling in CI
+- [x] Get [firmware/mouse_bridge_esp32s31](firmware/mouse_bridge_esp32s31/README.md) compiling in CI
 - [ ] Find a board or breakout that exposes USB OTG as a device
 - [ ] Confirm that Classic HID host and USB device both work on real hardware
 - [ ] Repeat the bring-up and open questions above
