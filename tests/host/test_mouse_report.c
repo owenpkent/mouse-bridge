@@ -1,20 +1,9 @@
-// Runs the report parser on a PC, no hardware needed:
-//   cc -std=c11 -Wall -Wextra -Werror -I../main test_mouse_report.c ../main/mouse_report.c -o test && ./test
+// Tests the ESP32-S31 report parser, decoder and USB forwarding.
 
-#include <stdio.h>
 #include <string.h>
 
+#include "check.h"
 #include "mouse_report.h"
-
-static int failures = 0;
-
-#define CHECK(cond)                                         \
-    do {                                                    \
-        if (!(cond)) {                                      \
-            printf("FAIL %s:%d: %s\n", __func__, __LINE__, #cond); \
-            failures++;                                     \
-        }                                                   \
-    } while (0)
 
 #define PARSE(map, out) mouse_parse_report_map((map), sizeof(map), 0, (out), 4)
 
@@ -212,6 +201,136 @@ static void test_boot_report(void) {
     CHECK(!mouse_decode_boot(report, 2, &r));
 }
 
+// A fake USB port that records what it sends and can be told to fail.
+typedef struct {
+    int calls;
+    int fail_calls;  // fail this many sends, then work
+    uint8_t buttons[8];
+    int x, y, wheel;
+} fake_usb_t;
+
+static bool fake_send(void *ctx, uint8_t buttons, int8_t x, int8_t y, int8_t wheel) {
+    fake_usb_t *usb = ctx;
+    if (usb->fail_calls > 0) {
+        usb->fail_calls--;
+        return false;
+    }
+    if (usb->calls < 8) {
+        usb->buttons[usb->calls] = buttons;
+    }
+    usb->calls++;
+    usb->x += x;
+    usb->y += y;
+    usb->wheel += wheel;
+    return true;
+}
+
+static void test_forward_click_goes_before_motion(void) {
+    mouse_forward_t state = {0};
+    fake_usb_t usb = {0};
+    const mouse_report_t r = {.buttons = 0x01, .x = 10, .y = -4, .wheel = 1};
+    mouse_forward(&state, true, &r, fake_send, &usb);
+    CHECK(usb.calls == 2);
+    CHECK(usb.buttons[0] == 0x01);  // the press, with no movement
+    CHECK(usb.buttons[1] == 0x01);  // then the move, still pressed
+    CHECK(usb.x == 10 && usb.y == -4 && usb.wheel == 1);
+    CHECK(state.sent == 0x01);
+}
+
+static void test_forward_no_change_sends_nothing(void) {
+    mouse_forward_t state = {0};
+    fake_usb_t usb = {0};
+    const mouse_report_t r = {0};
+    mouse_forward(&state, true, &r, fake_send, &usb);
+    mouse_forward(&state, true, NULL, fake_send, &usb);
+    CHECK(usb.calls == 0);
+}
+
+static void test_forward_large_move_is_split(void) {
+    mouse_forward_t state = {0};
+    fake_usb_t usb = {0};
+    const mouse_report_t r = {.x = 300};
+    mouse_forward(&state, true, &r, fake_send, &usb);
+    CHECK(usb.calls == 3);
+    CHECK(usb.x == 300);
+}
+
+// The failure that matters most: a lost release leaves a click stuck on the computer.
+static void test_forward_failed_release_is_retried(void) {
+    mouse_forward_t state = {0};
+    fake_usb_t usb = {0};
+    const mouse_report_t press = {.buttons = 0x01};
+    const mouse_report_t release = {.buttons = 0x00};
+    mouse_forward(&state, true, &press, fake_send, &usb);
+    CHECK(state.sent == 0x01);
+
+    usb.fail_calls = 2;
+    mouse_forward(&state, true, &release, fake_send, &usb);
+    CHECK(state.sent == 0x01);
+    mouse_forward(&state, true, NULL, fake_send, &usb);
+    CHECK(state.sent == 0x01);
+    mouse_forward(&state, true, NULL, fake_send, &usb);
+    CHECK(state.sent == 0x00);
+    CHECK(usb.calls == 2);
+    CHECK(usb.buttons[1] == 0x00);
+}
+
+static void test_forward_failed_press_drops_motion(void) {
+    mouse_forward_t state = {0};
+    fake_usb_t usb = {.fail_calls = 1};
+    const mouse_report_t r = {.buttons = 0x01, .x = 10};
+    mouse_forward(&state, true, &r, fake_send, &usb);
+    CHECK(usb.calls == 0 && usb.x == 0);
+    CHECK(state.want == 0x01 && state.sent == 0);
+}
+
+static void test_forward_failed_motion_stops_early(void) {
+    mouse_forward_t state = {0};
+    fake_usb_t usb = {.fail_calls = 1};
+    const mouse_report_t r = {.x = 300};
+    mouse_forward(&state, true, &r, fake_send, &usb);
+    CHECK(usb.calls == 0 && usb.x == 0);
+}
+
+static void test_forward_unplugged_sends_nothing(void) {
+    mouse_forward_t state = {0};
+    fake_usb_t usb = {0};
+    const mouse_report_t r = {.buttons = 0x01, .x = 10};
+    mouse_forward(&state, false, &r, fake_send, &usb);
+    CHECK(usb.calls == 0);
+    CHECK(state.want == 0x01 && state.sent == 0);
+}
+
+// Moving the bridge while a button is held: the next computer sees it held.
+static void test_forward_held_button_replays_after_hot_swap(void) {
+    mouse_forward_t state = {0};
+    fake_usb_t usb = {0};
+    const mouse_report_t press = {.buttons = 0x01};
+    mouse_forward(&state, true, &press, fake_send, &usb);
+    CHECK(usb.calls == 1);
+
+    mouse_forward(&state, false, NULL, fake_send, &usb);
+    CHECK(state.sent == 0);
+
+    mouse_forward(&state, true, NULL, fake_send, &usb);
+    CHECK(usb.calls == 2);
+    CHECK(usb.buttons[1] == 0x01);
+    CHECK(state.sent == 0x01);
+}
+
+// Released while unplugged: the next computer must never see a press.
+static void test_forward_release_while_unplugged_stays_released(void) {
+    mouse_forward_t state = {0};
+    fake_usb_t usb = {0};
+    const mouse_report_t press = {.buttons = 0x01};
+    const mouse_report_t release = {.buttons = 0x00};
+    mouse_forward(&state, true, &press, fake_send, &usb);
+    mouse_forward(&state, false, &release, fake_send, &usb);
+    mouse_forward(&state, true, NULL, fake_send, &usb);
+    CHECK(usb.calls == 1);
+    CHECK(state.sent == 0);
+}
+
 int main(void) {
     test_mouse_with_id();
     test_12bit_fields();
@@ -225,8 +344,14 @@ int main(void) {
     test_short_report_reads_zero();
     test_layout_limit_respected();
     test_boot_report();
-    if (failures == 0) {
-        printf("All report parser tests passed\n");
-    }
-    return failures != 0;
+    test_forward_click_goes_before_motion();
+    test_forward_no_change_sends_nothing();
+    test_forward_large_move_is_split();
+    test_forward_failed_release_is_retried();
+    test_forward_failed_press_drops_motion();
+    test_forward_failed_motion_stops_early();
+    test_forward_unplugged_sends_nothing();
+    test_forward_held_button_replays_after_hot_swap();
+    test_forward_release_while_unplugged_stays_released();
+    return check_result("mouse_report");
 }

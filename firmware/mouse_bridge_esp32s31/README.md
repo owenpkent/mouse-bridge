@@ -39,10 +39,4 @@ idf.py -p PORT flash monitor
 
 ## Test
 
-The report parser runs on a PC:
-
-```console
-cd test
-cc -std=c11 -Wall -Wextra -Werror -I../main test_mouse_report.c ../main/mouse_report.c -o test_mouse_report
-./test_mouse_report
-```
+The report parser and USB forwarding run on a PC, with no hardware: see [tests/fuzz](../../tests/fuzz/README.md) for the fuzzer and [Testing](../../CONTRIBUTING.md#testing) for the unit tests.

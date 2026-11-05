@@ -18,7 +18,7 @@ Firmware compiles in CI only (no local toolchain yet). Nothing below has run on 
 
 1. [ ] **Reconnect after power cycle.** The Pico initiates the connection to the bonded mouse. If this mouse only reconnects from pairing mode, the approach needs adjusting (look at making the Pico connectable and letting the mouse page it).
 2. [ ] **Button mapping.** If left registers as right, set `BUTTON_INDEX_BASE 1`.
-3. [ ] **Device detection.** If the mouse shows in the scan log but is not picked up, widen `isPointingDevice()`.
+3. [ ] **Device detection.** If the mouse shows in the scan log but is not picked up, widen `bridge_is_pointing_device()` in `bridge_logic.h`.
 4. [ ] **Hot-swap time.** Time from plugging into another computer to a working cursor (Pico boot plus Bluetooth reconnect).
 5. [ ] **Scroll direction.** If backwards, set `WHEEL_INVERT 1`.
 6. [ ] **Stuck click on link loss.** Hold a click, then cut the link two ways: power off the mouse, and move out of range. Time how long until the computer sees the release. Out of range waits for the Bluetooth supervision timeout, because a held button sends no reports to watch for. If it is too long, try shortening that timeout.

@@ -30,10 +30,22 @@ arduino-cli compile --fqbn "rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble,usbstac
 
 Use `rpipicow` instead of `rpipico2w` for the original Pico W. Arduino IDE settings are in the [README](README.md#flash).
 
+## Testing
+
+The firmware's pure logic has tests that run on a PC, with no hardware and only a C compiler and CMake:
+
+```sh
+cmake -S tests/host -B build-host
+cmake --build build-host
+ctest --test-dir build-host --output-on-failure
+```
+
+CI runs these on every pull request, plus a [fuzzer](tests/fuzz/README.md) over the ESP32-S31 report path for 60 seconds, and for 30 minutes each night. They can't show that a mouse works, so real hardware reports still matter most.
+
 ## Pull requests
 
 - Keep each PR to one change, and say in the description what hardware you tested on ("compiles only" is fine, just say so).
-- Keep the sketch a single file with plain Arduino C++. BT callbacks should only update shared state; USB output stays in `loop()`.
+- Keep the sketch to one `.ino` file with plain Arduino C++, plus `bridge_logic.h` for pure logic that has tests. BT callbacks should only update shared state; USB output stays in `loop()`.
 - Update [README.md](README.md), [TODO.md](TODO.md) and [CHANGELOG.md](CHANGELOG.md) when behavior changes.
 - CI must pass for both boards.
 

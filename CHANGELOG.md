@@ -7,6 +7,11 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 ### Added
 
 - Experimental, untested ESP32-S31 firmware in `firmware/mouse_bridge_esp32s31`, with a CI build.
+- Host unit tests in `tests/host`, and a libFuzzer harness in `tests/fuzz` that runs on pull requests and nightly.
+
+### Changed
+
+- The Pico firmware's pointing device check, button mapping and move splitting moved to `bridge_logic.h` so they can be tested. Behavior is unchanged, except that a single forwarded move is now capped at 32767.
 
 ## [0.1.0] - 2026-11-05
 

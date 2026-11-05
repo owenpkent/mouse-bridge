@@ -9,6 +9,7 @@
 #include <inttypes.h>
 #include <string.h>
 
+#include "bridge_logic.h"
 #include "class/hid/hid_device.h"
 #include "driver/gpio.h"
 #include "esp_bt.h"
@@ -173,7 +174,8 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
     (void)bufsize;
 }
 
-static bool usb_send(uint8_t buttons, int8_t x, int8_t y, int8_t wheel) {
+static bool usb_send(void *ctx, uint8_t buttons, int8_t x, int8_t y, int8_t wheel) {
+    (void)ctx;
     uint32_t start = now_ms();
     while (!tud_hid_ready()) {
         if (!tud_mounted() || now_ms() - start >= USB_READY_TIMEOUT_MS) {
@@ -184,47 +186,14 @@ static bool usb_send(uint8_t buttons, int8_t x, int8_t y, int8_t wheel) {
     return tud_hid_mouse_report(0, buttons, x, y, wheel, 0);
 }
 
-static int32_t clamp(int32_t v, int32_t limit) {
-    return v > limit ? limit : (v < -limit ? -limit : v);
-}
-
 static void usb_task(void *arg) {
     (void)arg;
-    uint8_t want = 0;  // what the mouse reports
-    uint8_t sent = 0;  // what the computer currently sees
-
+    mouse_forward_t forward = {0};
     for (;;) {
-        mouse_report_t r = {0};
+        // The timeout retries a button change that couldn't be sent.
+        mouse_report_t r;
         bool got = xQueueReceive(s_mouse_queue, &r, pdMS_TO_TICKS(USB_RETRY_MS)) == pdTRUE;
-        if (got) {
-            want = r.buttons;
-        }
-        if (!tud_mounted()) {
-            sent = 0;  // the next computer starts with nothing held
-            continue;
-        }
-
-        // Buttons first, so a click lands where the cursor was when it happened.
-        // A failed send is retried on the next report or USB_RETRY_MS, so a
-        // release can't get lost.
-        if (want != sent) {
-            if (!usb_send(want, 0, 0, 0)) {
-                continue;
-            }
-            sent = want;
-        }
-
-        // USB mouse reports carry 8-bit deltas; split large moves.
-        int32_t x = clamp(r.x, 32767), y = clamp(r.y, 32767), w = clamp(r.wheel, 32767);
-        while (x || y || w) {
-            int8_t cx = (int8_t)clamp(x, 127), cy = (int8_t)clamp(y, 127), cw = (int8_t)clamp(w, 127);
-            if (!usb_send(sent, cx, cy, cw)) {
-                break;
-            }
-            x -= cx;
-            y -= cy;
-            w -= cw;
-        }
+        mouse_forward(&forward, tud_mounted(), got ? &r : NULL, usb_send, NULL);
     }
 }
 
@@ -295,7 +264,7 @@ static void on_input(const esp_hidh_event_data_t *param) {
         mouse_decode(layout, param->input.data, param->input.length, &r);
     }
 #if WHEEL_INVERT
-    r.wheel = -r.wheel;
+    r.wheel = -bridge_clamp(r.wheel, BRIDGE_MAX_MOVE);  // clamp first: -INT32_MIN overflows
 #endif
     xQueueSend(s_mouse_queue, &r, 0);  // if USB has stalled, drop rather than block Bluetooth
 }
@@ -331,12 +300,6 @@ static esp_bd_addr_t s_best_addr;
 static int s_best_rssi;
 static bool s_found;
 
-// Class of Device: major class Peripheral (0x05), minor bit 0x80 = pointing device.
-// Combo keyboard+pointer devices match too.
-static bool is_pointing_device(uint32_t cod) {
-    return ((cod >> 8) & 0x1F) == 0x05 && (cod & 0x80);
-}
-
 static void on_device_found(const struct disc_res_param *res) {
     uint32_t cod = 0;
     bool has_cod = false;
@@ -353,7 +316,7 @@ static void on_device_found(const struct disc_res_param *res) {
     if (!has_cod) {
         return;
     }
-    bool pointer = is_pointing_device(cod);
+    bool pointer = bridge_is_pointing_device(cod);
     ESP_LOGI(TAG, "  " ESP_BD_ADDR_STR "  cod=0x%06" PRIx32 "  rssi=%d%s", ESP_BD_ADDR_HEX(res->bda),
              cod, rssi, pointer ? "  <- pointing device" : "");
     if (pointer && (!s_found || rssi > s_best_rssi)) {

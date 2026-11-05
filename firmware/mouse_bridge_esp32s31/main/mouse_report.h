@@ -44,3 +44,18 @@ void mouse_decode(const mouse_layout_t *layout, const uint8_t *data, size_t len,
 
 // Boot protocol: buttons, x, y. Returns false if the report is too short.
 bool mouse_decode_boot(const uint8_t *data, size_t len, mouse_report_t *out);
+
+// Sends one USB mouse report. Returns false if it couldn't be sent.
+typedef bool (*mouse_send_fn)(void *ctx, uint8_t buttons, int8_t x, int8_t y, int8_t wheel);
+
+typedef struct {
+    uint8_t want;  // what the mouse reports
+    uint8_t sent;  // what the computer currently sees
+} mouse_forward_t;
+
+// Forwards one report, or just retries a pending button change when report is NULL.
+// Buttons go first, so a click lands where the cursor was when it happened. A
+// failed button change stays pending, so a release can't get lost. While unmounted
+// nothing is sent, and a held button is replayed to the next computer.
+void mouse_forward(mouse_forward_t *state, bool mounted, const mouse_report_t *report,
+                   mouse_send_fn send, void *ctx);

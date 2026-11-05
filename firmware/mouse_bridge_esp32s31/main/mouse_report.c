@@ -4,6 +4,8 @@
 
 #include <string.h>
 
+#include "bridge_logic.h"
+
 #define PAGE_GENERIC_DESKTOP 0x01u
 #define PAGE_BUTTON 0x09u
 #define USAGE_X 0x30u
@@ -286,4 +288,31 @@ bool mouse_decode_boot(const uint8_t *data, size_t len, mouse_report_t *out) {
     out->y = (int8_t)data[2];
     out->wheel = 0;
     return true;
+}
+
+void mouse_forward(mouse_forward_t *state, bool mounted, const mouse_report_t *report,
+                   mouse_send_fn send, void *ctx) {
+    if (report != NULL) {
+        state->want = report->buttons;
+    }
+    if (!mounted) {
+        state->sent = 0;  // the next computer starts with nothing held
+        return;
+    }
+    if (state->want != state->sent) {
+        if (!send(ctx, state->want, 0, 0, 0)) {
+            return;
+        }
+        state->sent = state->want;
+    }
+    if (report == NULL) {
+        return;
+    }
+    bridge_motion_t motion = bridge_motion_make(report->x, report->y, report->wheel);
+    int8_t x, y, wheel;
+    while (bridge_motion_next(&motion, &x, &y, &wheel)) {
+        if (!send(ctx, state->sent, x, y, wheel)) {
+            return;
+        }
+    }
 }
