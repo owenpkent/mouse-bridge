@@ -12,3 +12,4 @@ fuzz-corpus/
 crash-*
 timeout-*
 oom-*
+!tests/fuzz/corpus/*.bin
