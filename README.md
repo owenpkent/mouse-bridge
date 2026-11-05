@@ -55,3 +55,7 @@ Flags at the top of the sketch:
 ## Why not something else
 
 Design notes, the options surveyed (ESP32, HID Remapper, Pi Zero, Adafruit's keyboard bridge) and fallbacks (Bluepad32, Mouse Without Borders) are in [docs/project-summary.md](docs/project-summary.md).
+
+## License
+
+MIT, see [LICENSE](LICENSE).
