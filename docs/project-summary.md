@@ -21,7 +21,7 @@ Options surveyed:
 | Generic "HID proxy" dongles on AliExpress | Unbranded, unverified |
 | Old CSR BLE-USB bridge dongle | Linux-based setup; reported mouse forwarding issues |
 | HID Remapper on Seeed XIAO nRF52840 | Good, but BLE only |
-| ESP32-S3 with espp (fork of esp-usb-ble-hid) | Good, but BLE only |
+| ESP32-S3 with esp-usb-ble-hid (built on espp) | Good, but BLE only |
 | Raspberry Pi Zero 2 W with Bluetooth-2-USB | Handles Classic, but bulky and slow to boot |
 | **Raspberry Pi Pico 2 W / Pico W** | **Handles Classic and BLE, native USB, small, cheap** |
 

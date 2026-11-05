@@ -21,6 +21,7 @@ Firmware compiles in CI only (no local toolchain yet). Nothing below has run on 
 3. [ ] **Device detection.** If the mouse shows in the scan log but is not picked up, widen `isPointingDevice()`.
 4. [ ] **Hot-swap time.** Time from plugging into another computer to a working cursor (Pico boot plus Bluetooth reconnect).
 5. [ ] **Scroll direction.** If backwards, set `WHEEL_INVERT 1`.
+6. [ ] **Stuck click on link loss.** Hold a click, then cut the link two ways: power off the mouse, and move out of range. Time how long until the computer sees the release. Out of range waits for the Bluetooth supervision timeout, because a held button sends no reports to watch for. If it is too long, try shortening that timeout.
 
 ## Later
 
