@@ -43,6 +43,34 @@ jobs:
           path: mouse_bridge-${{ matrix.board }}.uf2
           retention-days: 7
 
+  compile-esp32s31:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test the report parser
+        working-directory: firmware/mouse_bridge_esp32s31/test
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -I../main \
+            test_mouse_report.c ../main/mouse_report.c -o "$RUNNER_TEMP/test_mouse_report"
+          "$RUNNER_TEMP/test_mouse_report"
+      - name: Compile
+        uses: espressif/esp-idf-ci-action@e6f5c74232b1ccd4c97ed641f1e48553853f1fd5 # v1.2.0
+        with:
+          esp_idf_version: v6.1
+          target: esp32s31
+          path: firmware/mouse_bridge_esp32s31
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mouse_bridge-esp32s31
+          path: |
+            firmware/mouse_bridge_esp32s31/build/mouse_bridge_esp32s31.bin
+            firmware/mouse_bridge_esp32s31/build/bootloader/bootloader.bin
+            firmware/mouse_bridge_esp32s31/build/partition_table/partition-table.bin
+            firmware/mouse_bridge_esp32s31/build/flash_args
+          retention-days: 7
+
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: compile

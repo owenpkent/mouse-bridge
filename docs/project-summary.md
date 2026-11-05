@@ -85,7 +85,7 @@ Firmware compiles in CI, not yet tested on hardware.
 ## Fallbacks
 
 - **Bluepad32** on the same Pico 2 W: lower-level (Pico SDK, C), but a more widely tested Bluetooth host stack with Classic mouse support.
-- **ESP32-S31** with ESP-IDF: the hardware fits, but the datasheet is still preliminary (as of November 2026) and ESP-IDF support is recent. Starting from esp-usb-ble-hid, a BLE gamepad to Switch Pro Controller adapter built on esp-nimble-cpp, needs two main changes: moving from NimBLE to Bluedroid for Classic (ESP-IDF's `esp_hidh`), and adding a USB mouse output. Bluedroid is workable, but less convenient to use than esp-nimble-cpp. Not yet confirmed: whether Classic HID host and USB device both work on the S31 in ESP-IDF.
+- **ESP32-S31** with ESP-IDF: the hardware fits, but the datasheet is still preliminary (as of November 2026) and ESP-IDF support is recent. Starting from esp-usb-ble-hid, a BLE gamepad to Switch Pro Controller adapter built on esp-nimble-cpp, needs two main changes: moving from NimBLE to Bluedroid for Classic (ESP-IDF's `esp_hidh`), and adding a USB mouse output. Bluedroid is workable, but less convenient to use than esp-nimble-cpp. Not yet confirmed: whether Classic HID host and USB device both work on the S31 in ESP-IDF. An experimental, untested port is in [firmware/mouse_bridge_esp32s31](../firmware/mouse_bridge_esp32s31/README.md). It needs a board that exposes USB OTG as a device, which the Function-CoreBoard-1 and Korvo-1 don't appear to.
 - **Software sharing** with no hardware: pair the mouse to one PC and use Mouse Without Borders (PowerToys), Input Leap, or Deskflow.
 
 ## Next steps

@@ -4,6 +4,10 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Added
+
+- Experimental, untested ESP32-S31 firmware in `firmware/mouse_bridge_esp32s31`, with a CI build.
+
 ## [0.1.0] - 2026-11-05
 
 ### Added
