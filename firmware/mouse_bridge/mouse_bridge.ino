@@ -16,6 +16,8 @@
 #include <EEPROM.h>
 #include <Mouse.h>
 
+#include "bridge_logic.h"
+
 // ---------------------------------------------------------------- config ----
 
 // Set to 1 if left-click registers as right-click (library numbers buttons from 1).
@@ -87,9 +89,8 @@ static void onMouseMove(void *, int dx, int dy, int dw) {
 }
 
 static void onMouseButton(void *, int butNo, bool down) {
-  int idx = butNo - BUTTON_INDEX_BASE;
-  if (idx < 0 || idx > 4) return;  // USB boot mouse has 5 buttons
-  uint8_t mask = 1u << idx;
+  uint8_t mask = bridge_button_mask(butNo, BUTTON_INDEX_BASE);
+  if (mask == 0) return;
   if (down) {
     btButtons |= mask;
   } else {
@@ -160,12 +161,6 @@ static bool waitConnected(uint32_t timeoutMs) {
 
 // ------------------------------------------------------------- pairing ------
 
-// Class of Device: major class Peripheral (0x05), minor bit 0x80 = pointing device.
-// Combo keyboard+pointer devices match too.
-static bool isPointingDevice(uint32_t cod) {
-  return (((cod >> 8) & 0x1F) == 0x05) && (cod & 0x80);
-}
-
 static void doPairing() {
   LOG("Pairing: scanning %d s (put the mouse in pairing mode)\n", SCAN_SECONDS);
 
@@ -176,7 +171,7 @@ static void doPairing() {
   int best = -1;
   for (size_t i = 0; i < found.size(); i++) {
     auto &d = found[i];
-    bool pointer = isPointingDevice(d.deviceClass());
+    bool pointer = bridge_is_pointing_device(d.deviceClass());
     LOG("  %s  cod=0x%06lx  rssi=%d  %s%s\n", d.addressString(), (unsigned long)d.deviceClass(),
         d.rssi(), d.name(), pointer ? "  <- pointing device" : "");
     if (pointer && (best < 0 || d.rssi() > found[best].rssi())) best = (int)i;
@@ -220,10 +215,6 @@ static void doReconnect() {
 
 // ------------------------------------------------------------ forwarding ----
 
-static int8_t clamp8(int32_t v) {
-  return (int8_t)(v > 127 ? 127 : (v < -127 ? -127 : v));
-}
-
 static void forwardToUsb() {
   noInterrupts();
   int32_t x = pendX, y = pendY, w = pendW;
@@ -245,13 +236,10 @@ static void forwardToUsb() {
     usbButtons = b;
   }
 
-  // USB boot mouse reports carry 8-bit deltas; split large moves.
-  while (x || y || w) {
-    int8_t cx = clamp8(x), cy = clamp8(y), cw = clamp8(w);
+  bridge_motion_t motion = bridge_motion_make(x, y, w);
+  int8_t cx, cy, cw;
+  while (bridge_motion_next(&motion, &cx, &cy, &cw)) {
     Mouse.move(cx, cy, cw);
-    x -= cx;
-    y -= cy;
-    w -= cw;
   }
 }
 

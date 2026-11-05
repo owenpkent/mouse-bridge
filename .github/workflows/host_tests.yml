@@ -1,0 +1,46 @@
+name: Host tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: gcc
+            compiler: gcc
+            flags: ""
+          - name: clang sanitizers and corpus replay
+            compiler: clang
+            flags: -DMOUSE_BRIDGE_HOST_SANITIZE=ON -DMOUSE_BRIDGE_HOST_FUZZ=ON
+    name: ${{ matrix.name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y clang libclang-rt-dev ninja-build
+      - name: Configure
+        env:
+          COMPILER: ${{ matrix.compiler }}
+          FLAGS: ${{ matrix.flags }}
+        run: |
+          # shellcheck disable=SC2086 # FLAGS holds several arguments
+          cmake -S tests/host -B build-host -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER="$COMPILER" -DMOUSE_BRIDGE_HOST_WERROR=ON $FLAGS
+      - name: Build
+        run: cmake --build build-host
+      - name: Test
+        env:
+          ASAN_OPTIONS: halt_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ctest --test-dir build-host --output-on-failure

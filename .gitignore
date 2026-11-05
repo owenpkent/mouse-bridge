@@ -4,3 +4,12 @@ build/
 *.bin
 *.map
 .vscode/
+sdkconfig
+sdkconfig.old
+managed_components/
+build-host/
+fuzz-corpus/
+crash-*
+timeout-*
+oom-*
+!tests/fuzz/corpus/*.bin

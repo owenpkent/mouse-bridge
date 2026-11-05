@@ -1,6 +1,6 @@
 # mouse-bridge
 
-[![build](https://github.com/owenpkent/mouse-bridge/actions/workflows/build.yml/badge.svg)](https://github.com/owenpkent/mouse-bridge/actions/workflows/build.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![build](https://github.com/owenpkent/mouse-bridge/actions/workflows/build.yml/badge.svg)](https://github.com/owenpkent/mouse-bridge/actions/workflows/build.yml) [![Host tests](https://github.com/owenpkent/mouse-bridge/actions/workflows/host_tests.yml/badge.svg)](https://github.com/owenpkent/mouse-bridge/actions/workflows/host_tests.yml) [![Fuzz](https://github.com/owenpkent/mouse-bridge/actions/workflows/fuzz.yml/badge.svg)](https://github.com/owenpkent/mouse-bridge/actions/workflows/fuzz.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Use one **Bluetooth Classic** mouse with several computers by moving a small dongle between them, with no re-pairing.
 
