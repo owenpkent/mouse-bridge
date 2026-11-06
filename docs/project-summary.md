@@ -55,6 +55,7 @@ Arduino sketch for the arduino-pico core (Earle Philhower).
 - Forwards movement, wheel, and buttons to the USB `Mouse` library
 - BT callbacks only update shared state; USB output happens in `loop()` as the library docs recommend
 - Movement is chunked to fit 8-bit USB mouse reports
+- Pure logic lives in `bridge_logic.h`, so it can be tested on a PC
 
 **Controls**
 - LED fast blink: pairing
@@ -69,11 +70,12 @@ Arduino sketch for the arduino-pico core (Earle Philhower).
 
 **Config flags (top of sketch)**
 - `BUTTON_INDEX_BASE`: set to 1 if left-click registers as right-click
+- `WHEEL_INVERT`: set to 1 if scrolling runs backwards
 - `DEBUG`: serial logging at 115200 baud
 
 ## Status
 
-Firmware compiles in CI, not yet tested on hardware.
+Firmware compiles in CI, not yet tested on hardware. Host unit tests and fuzzing cover the pure logic and the ESP32-S31 report path, but not Bluetooth or USB behavior on a real board.
 
 ## Open questions to test
 
@@ -81,11 +83,13 @@ Firmware compiles in CI, not yet tested on hardware.
 2. **Button mapping.** Confirm left, right, and middle register correctly.
 3. **Device detection.** If the mouse shows in the serial scan log but isn't picked up, its Class of Device may need a wider match.
 4. **Hot-swap time.** Measure how long it takes to work after plugging into a different computer (Pico boot plus Bluetooth reconnect).
+5. **Scroll direction.** Confirm the wheel runs the right way.
+6. **Stuck click on link loss.** Time how long a held click takes to release when the mouse powers off or goes out of range.
 
 ## Fallbacks
 
 - **Bluepad32** on the same Pico 2 W: lower-level (Pico SDK, C), but a more widely tested Bluetooth host stack with Classic mouse support.
-- **ESP32-S31** with ESP-IDF: the hardware fits, but the datasheet is still preliminary (as of November 2026) and ESP-IDF support is recent. Starting from esp-usb-ble-hid, a BLE gamepad to Switch Pro Controller adapter built on esp-nimble-cpp, needs two main changes: moving from NimBLE to Bluedroid for Classic (ESP-IDF's `esp_hidh`), and adding a USB mouse output. Bluedroid is workable, but less convenient to use than esp-nimble-cpp. Not yet confirmed: whether Classic HID host and USB device both work on the S31 in ESP-IDF. An experimental, untested port is in [firmware/mouse_bridge_esp32s31](../firmware/mouse_bridge_esp32s31/README.md). It needs a board that exposes USB OTG as a device, which the Function-CoreBoard-1 and Korvo-1 don't appear to.
+- **ESP32-S31** with ESP-IDF: the hardware fits, but the datasheet is still preliminary (as of November 2026) and ESP-IDF support is recent. Starting from esp-usb-ble-hid, a BLE gamepad to Switch Pro Controller adapter built on esp-nimble-cpp, needs two main changes: moving from NimBLE to Bluedroid for Classic (ESP-IDF's `esp_hidh`), and adding a USB mouse output. Bluedroid is workable, but less convenient to use than esp-nimble-cpp. An experimental port is in [firmware/mouse_bridge_esp32s31](../firmware/mouse_bridge_esp32s31/README.md). It compiles against ESP-IDF v6.1, but it's untested, so whether Classic HID host and USB device both work on the S31 isn't confirmed. It needs a board that exposes USB OTG as a device: the ESP-Mosaico looks suitable, while the Function-CoreBoard-1 and Korvo-1 don't.
 - **Software sharing** with no hardware: pair the mouse to one PC and use Mouse Without Borders (PowerToys), Input Leap, or Deskflow.
 
 ## Next steps
@@ -102,6 +106,7 @@ Firmware compiles in CI, not yet tested on hardware.
 - Bluepad32: https://github.com/ricardoquesada/bluepad32
 - esp-usb-ble-hid (espp, BLE only): https://github.com/finger563/esp-usb-ble-hid
 - ESP32-S31 datasheet (preliminary): https://documentation.espressif.com/esp32-s31_datasheet_en.html
+- ESP-Mosaico user guide: https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s31/esp-mosaico/user_guide.html
 - ESP-IDF Bluetooth HID Host API: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/bluetooth/esp_hidh.html
 - HID Remapper (BLE only): https://github.com/jfedor2/hid-remapper
 - Bluetooth-2-USB (Pi Zero): https://github.com/quaxalber/bluetooth_2_usb
