@@ -1,6 +1,6 @@
 # TODO
 
-Firmware compiles in CI only (no local toolchain yet). Nothing below has run on hardware. Community tracking: [issue #1](https://github.com/owenpkent/mouse-bridge/issues/1).
+Firmware compiles in CI only (no local toolchain yet), and host tests and fuzzing run there too. Nothing below has run on hardware. Community tracking: [issue #1](https://github.com/owenpkent/mouse-bridge/issues/1).
 
 ## Get hardware
 
@@ -31,6 +31,8 @@ Firmware compiles in CI only (no local toolchain yet). Nothing below has run on 
 ## ESP32-S31 port (experimental)
 
 - [x] Get [firmware/mouse_bridge_esp32s31](firmware/mouse_bridge_esp32s31/README.md) compiling in CI
-- [ ] Find a board or breakout that exposes USB OTG as a device
+- [ ] Get a board that exposes USB OTG as a device (the ESP-Mosaico looks suitable; price and stock not yet confirmed)
+- [ ] Set the LED and button pins for that board in `main.c`
+- [ ] Work out flashing and logs once USB OTG is the mouse, using the USB Serial/JTAG pins if needed
 - [ ] Confirm that Classic HID host and USB device both work on real hardware
 - [ ] Repeat the bring-up and open questions above

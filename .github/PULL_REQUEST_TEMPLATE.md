@@ -6,5 +6,5 @@
 
 ## Checklist
 
-- [ ] CI build passes for both boards
+- [ ] CI passes (firmware builds, host tests, fuzzer)
 - [ ] README / TODO / CHANGELOG updated if behavior changed

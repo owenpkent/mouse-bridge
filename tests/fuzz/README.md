@@ -18,12 +18,12 @@ The Pico firmware gets its parsing from the arduino-pico library, so only its us
 ## When it runs
 
 - **Pull requests:** 60 seconds ([fuzz.yml](../../.github/workflows/fuzz.yml))
-- **Nightly:** 30 minutes at 05:41 UTC, from `main` only
-- **Every host test run:** replays `corpus/`, so past crashes stay fixed
+- **Nightly:** 30 minutes at 05:41 UTC, from `main` only. GitHub turns off scheduled workflows after 60 days with no repository activity, and they can be turned back on from the Actions tab.
+- **Host tests:** the Clang CI job replays `corpus/`, so past crashes stay fixed
 
 ## Run locally
 
-Needs Clang with libFuzzer on Linux or macOS.
+Needs Clang with libFuzzer. It also runs on Windows with LLVM's Clang, if the folder holding the `clang_rt.asan` DLL is on `PATH`.
 
 ```console
 cmake -S tests/host -B build-host -G Ninja -DCMAKE_BUILD_TYPE=Debug \

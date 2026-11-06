@@ -17,7 +17,7 @@ body:
     id: board
     attributes:
       label: Board
-      options: [Pico 2 W, Pico W, Pimoroni Pico Plus 2 W, Other]
+      options: [Pico 2 W, Pico W, Pimoroni Pico Plus 2 W, ESP32-S31 (experimental), Other]
     validations:
       required: true
   - type: input

@@ -14,12 +14,13 @@ In scope:
 
 - A Bluetooth device other than the paired mouse getting its input forwarded to the host (for example, spoofing the saved mouse address, or pairing without the owner's action).
 - Anything that lets a nearby attacker inject keystrokes or pointer input through the bridge.
+- Malformed Bluetooth data that crashes the firmware or corrupts its memory.
 - Leaks of the stored link key.
 
 Out of scope:
 
-- Attacks that need physical access to the Pico (anyone holding it can reflash it).
-- Weaknesses in the Bluetooth Classic protocol itself, or in BTstack / arduino-pico upstream (please report those upstream; we will still update once fixed).
+- Attacks that need physical access to the board (anyone holding it can reflash it).
+- Weaknesses in the Bluetooth Classic protocol itself, or upstream in BTstack, arduino-pico or ESP-IDF (please report those upstream; we will still update once fixed).
 
 ## Supported versions
 

@@ -17,7 +17,7 @@ Thanks for helping. The most useful thing right now is **testing on real hardwar
 
 ## Building
 
-No local toolchain is required: every push and pull request is compiled by CI, and the `.uf2` files appear as build artifacts on the run page.
+No local toolchain is required: every pull request and push to `main` is compiled by CI, and the `.uf2` files appear as build artifacts on the run page. The experimental ESP32-S31 port has its own [build notes](firmware/mouse_bridge_esp32s31/README.md#build).
 
 To build locally with [arduino-cli](https://arduino.github.io/arduino-cli/):
 
@@ -32,7 +32,7 @@ Use `rpipicow` instead of `rpipico2w` for the original Pico W. Arduino IDE setti
 
 ## Testing
 
-The firmware's pure logic has tests that run on a PC, with no hardware and only a C compiler and CMake:
+The firmware's pure logic has tests that run on a PC, with no hardware. They need only CMake and GCC or Clang:
 
 ```sh
 cmake -S tests/host -B build-host
@@ -47,7 +47,7 @@ CI runs these on every pull request, plus a [fuzzer](tests/fuzz/README.md) over 
 - Keep each PR to one change, and say in the description what hardware you tested on ("compiles only" is fine, just say so).
 - Keep the sketch to one `.ino` file with plain Arduino C++, plus `bridge_logic.h` for pure logic that has tests. BT callbacks should only update shared state; USB output stays in `loop()`.
 - Update [README.md](README.md), [TODO.md](TODO.md) and [CHANGELOG.md](CHANGELOG.md) when behavior changes.
-- CI must pass for both boards.
+- CI must pass: the firmware builds, the host tests and the fuzzer.
 
 ## Scope
 

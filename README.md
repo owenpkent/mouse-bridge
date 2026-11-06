@@ -21,8 +21,12 @@ It should help anyone in the same spot: a Bluetooth assistive pointing device, o
 ## Hardware
 
 - Raspberry Pi Pico 2 W (Pico W also works; Pimoroni Pico Plus 2 W for USB-C)
-- Micro-USB **data** cable
+- Micro-USB **data** cable (USB-C for the Pimoroni board)
 - Optional: a button USB switch, if moving the dongle by hand gets tedious
+
+No soldering is needed: the bridge only uses the USB port, so headers don't matter. Shop listings often mention only Wi-Fi or BLE. Look for the CYW43439 wireless chip, which is what provides Bluetooth Classic.
+
+An [experimental ESP32-S31 port](firmware/mouse_bridge_esp32s31/README.md) also exists. It's untested, and isn't part of releases.
 
 ## Flash
 
@@ -78,7 +82,7 @@ Design notes, the options surveyed (ESP32, HID Remapper, Pi Zero, Adafruit's key
 
 ## Contributing
 
-Mouse reports, bug reports and pull requests are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). Questions go in [Discussions](https://github.com/owenpkent/mouse-bridge/discussions). Report security issues privately per [SECURITY.md](SECURITY.md).
+Mouse reports, bug reports and pull requests are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md), which also covers the unit tests and fuzzing. Questions go in [Discussions](https://github.com/owenpkent/mouse-bridge/discussions). Report security issues privately per [SECURITY.md](SECURITY.md).
 
 ## License
 
